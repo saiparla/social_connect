@@ -39,7 +39,7 @@ import { useAuth, api } from '../context/AuthContext';
 import Swal from 'sweetalert2';
 
 const AdminPanel = () => {
-  const { hasRole } = useAuth();
+  const { hasRole, companyid } = useAuth();
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,7 +102,7 @@ const AdminPanel = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      let url = '/api/v1/admin/users';
+      let url = `/api/v1/admin/users/${companyid}`;
       if (userStatusFilter !== 'all') url += `?status=${userStatusFilter}`;
       const res = await api.get(url);
       setUsers(res.data.users || []);
@@ -130,7 +130,7 @@ const AdminPanel = () => {
       fetchRoles();
       fetchCompanies();
     }
-  }, [hasRole, fetchUsers, fetchRoles, fetchCompanies, userStatusFilter, companyStatusFilter]);
+  }, [hasRole, fetchUsers, fetchRoles, fetchCompanies, userStatusFilter, companyStatusFilter,companyid]);
 
   useEffect(() => {
     refreshService.onUserCreated(() => fetchUsers());

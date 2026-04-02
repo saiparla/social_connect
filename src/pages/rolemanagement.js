@@ -70,14 +70,66 @@ export default function RoleManagement() {
   const fetchRoles = async () => {
     try {
       const res = await api.get("/api/v1/admin/roles");
-      const data = res.data?.data || res.data?.roles || {};
-      const roleList = Object.entries(data).map(([key, perms]) => ({
-        key,
-        label: formatLabel(key),
-        permissions: perms,
-      }));
+      console.log(res.data);
+      
+      // Handle the new payload structure
+      let roleList = [];
+      
+      if (res.data?.data && typeof res.data.data === 'object') {
+        // If response has a data property that contains roles object
+        if (res.data.data.permissions) {
+          // Single role object with permissions
+          roleList = [{
+            key: res.data.data.role_id || res.data.data.role_key || "admin",
+            label: res.data.data.role_name || formatLabel(res.data.data.role_id),
+            permissions: res.data.data.permissions || {}
+          }];
+        } else {
+          // Multiple roles object where each key is a role
+          roleList = Object.entries(res.data.data).map(([key, value]) => ({
+            key: key,
+            label: value.role_name || formatLabel(key),
+            permissions: value.permissions || value || {}
+          }));
+        }
+      } else if (res.data?.roles && typeof res.data.roles === 'object') {
+        // Handle roles property
+        roleList = Object.entries(res.data.roles).map(([key, value]) => ({
+          key: key,
+          label: value.role_name || formatLabel(key),
+          permissions: value.permissions || value || {}
+        }));
+      } else if (Array.isArray(res.data)) {
+        // Handle array response
+        roleList = res.data.map(role => ({
+          key: role.role_id || role.role_key || role.key,
+          label: role.role_name || role.label || formatLabel(role.role_id),
+          permissions: role.permissions || {}
+        }));
+      } else if (typeof res.data === 'object' && res.data !== null) {
+        // Handle direct object response (like the payload you showed)
+        if (res.data.permissions) {
+          // Single role object
+          roleList = [{
+            key: res.data.role_id || res.data.role_key || "admin",
+            label: res.data.role_name || formatLabel(res.data.role_id),
+            permissions: res.data.permissions
+          }];
+        } else {
+          // Try to extract roles from the object
+          roleList = Object.entries(res.data)
+            .filter(([key, value]) => value && typeof value === 'object' && (value.permissions || value.role_name))
+            .map(([key, value]) => ({
+              key: key,
+              label: value.role_name || formatLabel(key),
+              permissions: value.permissions || value
+            }));
+        }
+      }
+      
       setRoles(roleList);
     } catch (err) {
+      console.error("Error fetching roles:", err);
       setSnackbar({ open: true, message: "Failed to load roles", severity: "error" });
     }
   };

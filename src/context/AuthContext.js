@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
   const [permissions, setPermissions] = useState({});
   const [loading, setLoading] = useState(true);
   const refreshTimer = useRef(null);
+  const [companyid,setCompanyid] = useState(null)
 
   useEffect(() => {
     const token = getCookie('token');
@@ -52,7 +53,7 @@ export const AuthProvider = ({ children }) => {
       });
       if (res.data?.data) {
         setUser(res.data.data);
-        console.log(res.data.data)
+        setCompanyid(res.data.data.companyId)
         setPermissions(res.data.data.permissions || {});
         scheduleRefresh();
       }
@@ -112,6 +113,7 @@ export const AuthProvider = ({ children }) => {
     hasPermission,
     hasRole,
     isSuperAdmin,
+    companyid
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
