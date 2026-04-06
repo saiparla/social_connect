@@ -129,6 +129,7 @@ const AdminPanel = () => {
       fetchUsers();
       fetchRoles();
       fetchCompanies();
+      console.log(companyid)
     }
   }, [hasRole, fetchUsers, fetchRoles, fetchCompanies, userStatusFilter, companyStatusFilter,companyid]);
 
